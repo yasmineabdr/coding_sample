@@ -1,0 +1,82 @@
+---
+title: ""
+author: "Yasmine Abdel-Rahman"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| message: false
+
+library(tidyverse)
+library(palmerpenguins)
+library(datasauRus)
+library(knitr)
+```
+
+SurveyUSA polled 1,500 US adults between January 31, 2024 and February 2, 2024. Of the 1,500 adults, 1,259 were identified by SurveyUSA as being registered to vote, and of these 1,048 were found to be likely to vote in the 2024 November election for President.
+
+Responses were broken down into the following categories:
+
+|          |                                            |
+|----------|--------------------------------------------|
+| Variable | Levels                                     |
+| Age      | 18-49; 50+                                 |
+| Vote     | Donald Trump (R); Joe Biden (D); Undecided |
+
+Of the 1,048 responses, 507 were between the ages of 18-49. Of the individuals that are between 18-49, 238 individuals responded that they would vote for Donald Trump, 237 said they would vote for Joe Biden, and the remainder were undecided. Of the individuals that are 50+, 271 individuals responded that they would vote for Donald Trump, 228 said they would vote for Joe Biden, and the remainder were undecided.
+
+`# two-way table that summarizes these data`
+
+```{r}
+#| label: survey-counts
+
+survey_counts <- tibble( 
+  age = c(rep("18-49", 3), rep("50+", 3)),
+  vote = c(rep(c("Donald Trump (R)", "Joe Biden (D)", "Undecided"), 2)),
+  n = c(238, 237, 32, 271, 228, 19))
+
+survey_counts |>
+  pivot_wider(names_from = age, values_from = n) |>
+  kable()
+```
+
+`# the proportions of individuals in this sample who are planning to vote for each of the candidates or are undecided among those who are 18-49 years old as well as among those who are 50+ years old`
+
+```{r}
+#| label: survey-age-vote-props
+
+survey_counts |>
+  group_by(age, vote) |>
+  summarize(total = sum(n)) |>
+  mutate(proportion = total / sum(total)) |>
+  ungroup()
+```
+
+{{< pagebreak >}}
+
+`# relationship between age and vote`
+
+```{r}
+#| label: survey-plot
+
+survey_counts = survey_counts |>
+  group_by(age, vote) |>
+  summarize(total = sum(n)) |>
+  mutate(proportion = total / sum(total)) |>
+  ungroup()
+
+ggplot(survey_counts, aes(x = age, y = proportion, fill = vote)) +
+  geom_col() +
+  labs(
+    x = "Age",
+    y = "Proportion",
+    fill = "Vote"
+    ) +
+  scale_fill_manual(values = c("#E81B23", "#0015BC", "gray")) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+Based on the visualizations and calculations from before, we can see that younger people (age 18-49) are slightly more likely to vote for Joe Biden than 50+. Younger voters are also more likely to be undecided than older voters. Considering the political climate of America these days, this makes sense, when comparing younger and older voters.
